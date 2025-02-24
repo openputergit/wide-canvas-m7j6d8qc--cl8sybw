@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-A-Hamster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .hole {
+            position: relative;
+            overflow: hidden;
+            border-radius: 50%;
+            background: #4a5568;
+        }
+        .hamster {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            bottom: 100%;
+            background: #f6ad55;
+            border-radius: 50%;
+            transition: bottom 0.1s;
+            cursor: pointer;
+        }
+        .hamster.show {
+            bottom: 0;
+        }
+        .hammer {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 16 16'><path fill='brown' d='M13 2.5a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 5 2.5V2a1.5 1.5 0 0 1 1.5-1.5h5A1.5 1.5 0 0 1 13 2v.5zm-1.5 3h-5A1.5 1.5 0 0 1 5 4V3.5a1.5 1.5 0 0 1 1.5-1.5h5A1.5 1.5 0 0 1 13 3.5V4a1.5 1.5 0 0 1-1.5 1.5z'/></svg>") 16 16, auto;
+        }
+    </style>
+</head>
+<body class="bg-blue-100 min-h-screen hammer">
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-800 mb-4">Whack-A-Hamster</h1>
+            <div class="flex justify-center gap-8 mb-4">
+                <p class="text-2xl">Score: <span id="score">0</span></p>
+                <p class="text-2xl">Time: <span id="time">30</span>s</p>
+            </div>
+            <button id="startGame" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">Start Game</button>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto" id="gameBoard">
+            <!-- 10 holes will be generated here -->
+        </div>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('gameBoard');
+        const scoreDisplay = document.getElementById('score');
+        const timeDisplay = document.getElementById('time');
+        const startButton = document.getElementById('startGame');
+        let score = 0;
+        let timeLeft = 30;
+        let gameInterval;
+        let hamsterInterval;
+        let isPlaying = false;
+
+        // Create 10 holes
+        for (let i = 0; i < 10; i++) {
+            const hole = document.createElement('div');
+            hole.className = 'hole aspect-square';
+            const hamster = document.createElement('div');
+            hamster.className = 'hamster';
+            hole.appendChild(hamster);
+            gameBoard.appendChild(hole);
+
+            hamster.addEventListener('click', () => {
+                if (isPlaying && hamster.classList.contains('show')) {
+                    score += 1;
+                    scoreDisplay.textContent = score;
+                    hamster.classList.remove('show');
+                    // Add hit animation
+                    hamster.style.backgroundColor = '#fc8181';
+                    setTimeout(() => {
+                        hamster.style.backgroundColor = '#f6ad55';
+                    }, 100);
+                }
+            });
+        }
+
+        function showRandomHamster() {
+            const hamsters = document.querySelectorAll('.hamster');
+            const randomIndex = Math.floor(Math.random() * hamsters.length);
+            const selectedHamster = hamsters[randomIndex];
+            
+            if (!selectedHamster.classList.contains('show')) {
+                selectedHamster.classList.add('show');
+                setTimeout(() => {
+                    selectedHamster.classList.remove('show');
+                }, Math.random() * 800 + 600);
+            }
+        }
+
+        function startGame() {
+            if (isPlaying) return;
+            isPlaying = true;
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.textContent = score;
+            timeDisplay.textContent = timeLeft;
+            startButton.disabled = true;
+            startButton.classList.add('opacity-50');
+
+            hamsterInterval = setInterval(showRandomHamster, 1000);
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            clearInterval(hamsterInterval);
+            startButton.disabled = false;
+            startButton.classList.remove('opacity-50');
+            alert(`Game Over! Your score: ${score}`);
+            document.querySelectorAll('.hamster').forEach(hamster => {
+                hamster.classList.remove('show');
+            });
+        }
+
+        startButton.addEventListener('click', startGame);
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
